@@ -1,0 +1,49 @@
+use marcodan_infoacall;
+
+create table Cast (
+	ID int auto_increment primary key,
+	nome varchar(255) default null,
+    cognome varchar(255) default null,
+    data_nascita varchar(255) default null,
+    ruolo enum ('protagonista', 'comparsa') default 'non_catalogato'
+);
+
+create table Programma (
+	ID int auto_increment primary key,
+	titolo varchar(255),
+    descrizione varchar(255),
+	titolo varchar(255),
+    descrizione varchar(255),
+    genere enum ('fantasy', 'horror', 'documentario', 'telegiornale')
+);
+
+create table Episodio_Serie (
+	ID int auto_increment primary key,
+    ID_Serie int not null,
+	numero_stagione int not null,
+	numero_episodio int not null,
+    unique (numero_stagione, numero_episodio),
+    constraint serie_episodio foreign key (ID_Serie) references Serie (ID)
+);
+
+create table Serie (
+	ID int auto_increment primary key,
+	nome varchar(255),
+    descrizione varchar(255),
+	unique (nome, descrizione)
+);
+
+create table Canali (
+	ID int auto_increment primary key,
+    LCN int not null unique,
+    nome varchar(255)
+);
+
+create table Utente (
+	ID int auto_increment primary key,
+    email varchar(255) unique,
+    password varchar(255),
+    nome varchar(255) default null,
+    cognome varchar(255) default null,
+    data_nascita varchar(255) default null
+);
