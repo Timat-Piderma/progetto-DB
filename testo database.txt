@@ -1,50 +1,102 @@
+drop database marcodan_infoacall;
+create database marcodan_infoacall;
 use marcodan_infoacall;
 
-create table Cast (
-	ID int auto_increment primary key,
+create table if not exists Cast (
+	ID integer auto_increment primary key,
 	nome varchar(255) not null,
     cognome varchar(255) not null,
     codice_fiscale varchar(255) not null unique,
     ruolo enum ('non_catalogato', 'protagonista', 'comparsa', 'presentatore') default 'non_catalogato'
 );
 
-create table Genere (
-	ID int auto_increment primary key,
+create table if not exists Genere (
+	ID integer auto_increment primary key,
     nome varchar(255) not null unique
 );
 
-create table Serie (
-	ID int auto_increment primary key,
+create table if not exists Serie (
+	ID integer auto_increment primary key,
 	nome varchar(255) not null,
     descrizione varchar(255) not null
 );
 
-create table Programma (
-	ID int auto_increment primary key,
-	titolo varchar(255) not null,
-    descrizione varchar(255) not null,
+create table if not exists Programma (
+	ID integer auto_increment primary key,
 	titolo varchar(255) not null,
     descrizione varchar(255) not null,
     immagine varchar(255) default null,
     link varchar(255) default null,
     genere varchar(255) not null,
-	numero_stagione int default null,
-	numero_episodio int default null,
-    foreign key (ID_Serie) references Serie(ID),
-    check (genere IN (select nome from Genere))
+	numero_stagione integer default null,
+	numero_episodio integer default null,
+    ID_Serie integer default null,
+    constraint Serie_Programma foreign key (ID_Serie) references Serie(ID),
+    check (Genere IN (select nome from Genere))
 );
 
-create table Canali (
-	ID int auto_increment primary key,
-    LCN int not null unique,
+create table if not exists Canali (
+	ID integer auto_increment primary key,
+    LCN integer not null unique,
     nome varchar(255) not null
 );
 
-create table Utente (
-	ID int auto_increment primary key,
+create table if not exists Utente (
+	ID integer auto_increment primary key,
     email varchar(255) not null unique,
     password varchar(255) not null,
     nome varchar(255) not null,
-    cognome varchar(255) not null,
-    data_nascita varchar(255) not null
+    cognome varchar(255) not null
 );
+
+delete from Utente;
+delete from Genere;
+delete from Canali;
+delete from Serie;
+delete from Programmi;
+delete from Cast;
+
+insert into Canali (LCN, nome) values 
+	(001, "Rai 1"), 
+    (002, "Rai 2"), 
+    (003, "Rai 3");
+
+insert into Genere (nome) values
+	("Documentario"),
+    ("Avventura"),
+    ("Animazione"),
+    ("Horror"),
+    ("Azione"),
+    ("Drammatico"),
+    ("Sci-Fi"),
+    ("Commedia"),
+    ("Fiction"),
+    ("Poliziesco"),
+    ("Giallo"),
+    ("Informativo");
+    
+insert into Serie (nome, descrizione) values
+	("Johnny Depp vs Amber Heard", "Il processo più popolare d'America."),
+    ("Don Matteo 1", "A Gubbio, in provincia di Perugia, un sacerdote è chiamato a ricoprire l'incarico di parroco nella Chiesa di San Giovanni. Questo sacerdote è don Matteo Minelli.");
+    
+insert into Programmi (titolo, descrizione, immagine, link, genere, numero_stagione, numero_episodio, ID_Serie) values
+	("Quando tutto ebbe inizio", "Primo episodio del processo più popolare d'America." "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "horror", 01, 01, 1),
+    ("Lo Straniero", "Primo episodio di Don Matteo", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "Fiction", 01, 01, 2),
+    ("Una Banale Operazione", "Secondo episodio di Don Matteo", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "Fiction", 01, 02, 2);
+
+insert into Utente (email, nome, cognome, cf, password) values
+	("marco.dantonio1@student.univaq.it", "Marco", "D'Antonio", "Non scrivo il mio cf qui", qwertyuioplkjhgfdsazxcvbnmhgfdsassertyui),
+    ("alessia.sebastiano@student.univaq.it", "Alessia", "Sebastiano", "Non scrivo il mio cf qui", aertyukjnmkjhgfcvbnhgfbnmkgfvbnjgfgb),
+	("mattia.peccerillo@student.univaq.it", "Mattia", "Peccerillo", "Non scrivo il mio cf qui", nbvcdfrtyuikjnbvfrtyuiuytredfvbhjkmnbv);
+    
+insert into Cast (nome, cognome, cf, ruolo) values
+	("Johnny", "Depp", JOHNNYDEPP01001101XDXD, attore),
+    ("Matteo", "Minelli", IOSONODONMATTEO004356LOL, attore),
+	("Amber", "Heard", SONOLACATTIVA057391ADF, antagonista);
+
+select * from Serie;
+select * from Programmi;
+select * from Utente;
+select * from Genere;
+select * from Cast;
+select * from Canali;
