@@ -2,51 +2,85 @@ drop database marcodan_infoacall;
 create database marcodan_infoacall;
 use marcodan_infoacall;
 
-create table if not exists Cast (
+create table Cast (
+	ID integer auto_increment primary key,
+    	nome varchar(255) not null,
+    	cognome varchar(255) not null,
+    	cf varchar(13) not null,
+    	constraint cast_unico unique(cf),
+    	
+);
+
+create table Genere (
+    	ID integer auto_increment primary key,
+    	nome varchar(255) not null,
+    	constraint genere_unico unique(nome)
+);
+
+create table Serie (
 	ID integer auto_increment primary key,
 	nome varchar(255) not null,
-    cognome varchar(255) not null,
-    codice_fiscale varchar(255) not null unique,
-    ruolo enum ('non_catalogato', 'protagonista', 'comparsa', 'presentatore') default 'non_catalogato'
+    	descrizione varchar(255) not null
 );
 
-create table if not exists Genere (
-	ID integer auto_increment primary key,
-    nome varchar(255) not null unique
-);
-
-create table if not exists Serie (
-	ID integer auto_increment primary key,
-	nome varchar(255) not null,
-    descrizione varchar(255) not null
-);
-
-create table if not exists Programma (
+create table Programma (
 	ID integer auto_increment primary key,
 	titolo varchar(255) not null,
-    descrizione varchar(255) not null,
-    immagine varchar(255) default null,
-    link varchar(255) default null,
-    genere varchar(255) not null,
+    	descrizione varchar(255) not null,
+    	immagine varchar(255) default null,
+    	link varchar(255) default null,
+    	genere varchar(255) not null,
 	numero_stagione integer default null,
 	numero_episodio integer default null,
-    ID_Serie integer default null,
-    constraint Serie_Programma foreign key (ID_Serie) references Serie(ID),
-    check (Genere IN (select nome from Genere))
+    	ID_Serie integer default null,
+    	constraint Serie_Programma FOREIGN KEY (ID_Serie) references Serie(ID) ON DELETE RESTRICT,
+    	check (Genere IN (select nome from Genere))
 );
 
-create table if not exists Canali (
-	ID integer auto_increment primary key,
-    LCN integer not null unique,
-    nome varchar(255) not null
+create table Canali (
+    	ID integer auto_increment primary key,
+    	LCN integer not null,
+    	nome varchar(255) not null,
+    	constraint Canali_unico unique(LCN)
+    
 );
 
-create table if not exists Utente (
-	ID integer auto_increment primary key,
-    email varchar(255) not null unique,
-    password varchar(255) not null,
-    nome varchar(255) not null,
-    cognome varchar(255) not null
+create table Utente (
+    	ID integer auto_increment primary key,
+    	email varchar(255) not null unique,
+    	password varchar(255) not null,
+    	nome varchar(255) not null,
+    	cognome varchar(255) not null,
+    	constraint Utente_unico unique(email)
+);
+
+create table Preferisce (
+	ID_Utente integer not null,
+    	ID_Canale integer not null,
+    	fascia_Oraria varchar(255) not null,
+    	constraint chiave_Preferisce primary key (fascia_Oraria, ID_Utente, ID_Canale),
+    	constraint preferenze_Utente FOREIGN KEY (ID_Utente) reference Utente(ID) ON UPDATE CASCADE ON DELETE CASCADE,
+	constraint preferenze_Canale FOREIGN KEY (ID_Utente) reference Canale(ID) ON UPDATE CASCADE ON DELETE RESTRICT
+);
+create table Trasmette (
+	ID_Programma integer not null,
+    	ID_Canale integer not null,
+    	dataProgrammazione DATE not null,
+	ora_Inizio TIME not null,
+	ora_Fine TIME not null,
+    	constraint chiave_Trasmette primary key (dataProgrammazione,ora_Inizio, ora_Fine, ID_Programma, ID_Canale),
+    	constraint trasmette_Programma FOREIGN KEY (ID_Programma) reference Programma(ID) ON UPDATE CASCADE ON DELETE CASCADE,
+	constraint trasmette_Canale FOREIGN KEY (ID_Canale) reference Canale(ID) ON UPDATE CASCADE ON DELETE RESTRICT
+);
+create table Partecipano (
+	ID_Cast integer not null,
+    	ID_Programma integer not null,
+    	ruolo varchar(255) default not null,
+	check (ruolo in('non_catalogato', 'attore', 'regista', 'presentatore')),
+    	constraint chiave_Partecipano primary key (ruolo, ID_Cast, ID_Programma),
+    	constraint partecipano_Cast FOREIGN KEY (ID_Cast) reference Cast(ID) ON UPDATE CASCADE ON RESTRICT,
+	constraint partecipano_Programma FOREIGN KEY (ID_Programma) reference Programma(ID) ON UPDATE CASCADE
+
 );
 
 delete from Utente;
