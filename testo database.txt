@@ -84,45 +84,38 @@ alter table Partecipano add foreign key (ID_Programma) references Programma(ID) 
 
 insert into Canale (LCN, nome) values 
 	(001, "Rai 1"), 
-    (002, "Rai 2"), 
-    (003, "Rai 3");
+    	(002, "Rai 2"), 
+    	(003, "Rai 3");
 
 insert into Genere (nome) values
 	("Documentario"),
-    ("Avventura"),
-    ("Animazione"),
-    ("Horror"),
-    ("Azione"),
-    ("Drammatico"),
-    ("Sci-Fi"),
-    ("Commedia"),
-    ("Fiction"),
-    ("Poliziesco"),
-    ("Giallo"),
-    ("Informativo");
+    	("Avventura"),
+    	("Animazione"),
+    	("Horror"),
+    	("Azione"),
+    	("Drammatico"),
+    	("Sci-Fi"),
+    	("Commedia"),
+    	("Fiction"),
+    	("Poliziesco"),
+    	("Giallo"),
+    	("Informativo");
     
 insert into Serie (nome, descrizione) values
 	("Johnny Depp vs Amber Heard", "Il processo più popolare d'America."),
-    ("Don Matteo 1", "A Gubbio, in provincia di Perugia, un sacerdote è chiamato a ricoprire l'incarico di parroco nella Chiesa di San Giovanni. Questo sacerdote è don Matteo Minelli.");
+    	("Don Matteo 1", "A Gubbio, in provincia di Perugia, un sacerdote è chiamato a ricoprire l'incarico di parroco nella Chiesa di San Giovanni. Questo sacerdote è don Matteo Minelli.");
     
 insert into Programma (titolo, descrizione, immagine, link, genere, numero_stagione, numero_episodio, ID_Serie) values
 	("Quando tutto ebbe inizio", "Primo episodio del processo più popolare d'America.", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "horror", 01, 01, 1),
-    ("Lo Straniero", "Primo episodio di Don Matteo", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "Fiction", 01, 01, 2),
-    ("Una Banale Operazione", "Secondo episodio di Don Matteo", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "Fiction", 01, 02, 2);
+    	("Lo Straniero", "Primo episodio di Don Matteo", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "Fiction", 01, 01, 2),
+    	("Una Banale Operazione", "Secondo episodio di Don Matteo", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "Fiction", 01, 02, 2);
 
 insert into Utente (email, nome, cognome, password) values
 	("marco.dantonio1@student.univaq.it", "Marco", "D'Antonio", "qwertyuioplkjhgfdsazxcvbnmhgfdsassertyui"),
-    ("alessia.sebastiano@student.univaq.it", "Alessia", "Sebastiano", "aertyukjnmkjhgfcvbnhgfbnmkgfvbnjgfgb"),
+    	("alessia.sebastiano@student.univaq.it", "Alessia", "Sebastiano", "aertyukjnmkjhgfcvbnhgfbnmkgfvbnjgfgb"),
 	("mattia.peccerillo@student.univaq.it", "Mattia", "Peccerillo", "nbvcdfrtyuikjnbvfrtyuiuytredfvbhjkmnbv");
     
 insert into `Cast` (nome, cognome, cf) values
 	("Johnny", "Depp", "JOHNNYDEPP010"),
-    ("Matteo", "Minelli", "IOSONOMATTEO1"),
+    	("Matteo", "Minelli", "IOSONOMATTEO1"),
 	("Amber", "Heard", "SONOLACATTIVA");
-
-select * from Serie;
-select * from Programma;
-select * from Utente;
-select * from Genere;
-select * from `Cast`;
-select * from Canale;
