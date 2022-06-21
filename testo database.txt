@@ -59,10 +59,10 @@ create table Preferisce (
 create table Trasmette (
 	ID_Programma integer not null,
 	ID_Canale integer not null,
-	dataProgrammazione DATE not null,
+	data_Programmazione DATE not null,
 	ora_Inizio TIME not null,
 	ora_Fine TIME not null,
-	constraint chiave_Trasmette primary key (dataProgrammazione,ora_Inizio, ora_Fine, ID_Programma, ID_Canale)
+	constraint chiave_Trasmette primary key (data_Programmazione,ora_Inizio, ora_Fine, ID_Programma, ID_Canale)
 );
 create table Partecipano (
 	ID_Cast integer not null,
