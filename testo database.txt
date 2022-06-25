@@ -6,25 +6,24 @@ create table `Cast` (
 	ID integer auto_increment primary key,
 	nome varchar(255) not null,
 	cognome varchar(255) not null,
-	cf varchar(13) not null,
-	constraint cast_unico unique(cf)
+	cf varchar(13) not null unique
 );
 
 create table Genere (
 	ID integer auto_increment primary key,
-	nome varchar(255) not null,
-	constraint genere_unico unique(nome)
+	nome varchar(255) not null unique
 );
 
 create table Serie (
 	ID integer auto_increment primary key,
+    ISAN integer not null unique,
 	nome varchar(255) not null,
 	descrizione varchar(255) not null
 );
 
 create table Programma (
 	ID integer auto_increment primary key,
-	ISAN integer not null,
+	ISAN integer not null unique,
 	titolo varchar(255) not null,
 	descrizione varchar(255) not null,
 	immagine varchar(255) default null,
@@ -33,14 +32,12 @@ create table Programma (
 	numero_stagione integer default null,
 	numero_episodio integer default null,
 	ID_Serie integer default null
-	constraint Programma_unico unique(ISAN)
 );
 
 create table Canale (
 	ID integer auto_increment primary key,
-	LCN integer not null,
-	nome varchar(255) not null,
-	constraint Canali_unico unique(LCN)
+	LCN integer not null unique,
+	nome varchar(255) not null
 );
 
 create table Utente (
@@ -48,8 +45,7 @@ create table Utente (
 	email varchar(255) not null unique,
 	`password` varchar(255) not null,
 	nome varchar(255) not null,
-	cognome varchar(255) not null,
-	constraint Utente_unico unique(email)
+	cognome varchar(255) not null
 );
 
 create table Preferisce (
@@ -58,6 +54,7 @@ create table Preferisce (
 	fascia_Oraria varchar(255) not null,
 	constraint chiave_Preferisce primary key (fascia_Oraria, ID_Utente, ID_Canale)
 );
+
 create table Trasmette (
 	ID_Programma integer not null,
 	ID_Canale integer not null,
@@ -66,6 +63,7 @@ create table Trasmette (
 	ora_Fine TIME not null,
 	constraint chiave_Trasmette primary key (data_Programmazione,ora_Inizio, ora_Fine, ID_Programma, ID_Canale)
 );
+
 create table Partecipano (
 	ID_Cast integer not null,
 	ID_Programma integer not null,
@@ -75,13 +73,9 @@ create table Partecipano (
 );
 
 alter table Programma add foreign key (ID_Serie) references Serie(ID) ON DELETE RESTRICT;
-alter table Preferisce add foreign key (ID_Utente) references Utente(ID) ON UPDATE CASCADE ON DELETE CASCADE;
-alter table Preferisce add foreign key (ID_Canale) references Canale(ID) ON UPDATE CASCADE ON DELETE RESTRICT;
-alter table Trasmette add foreign key (ID_Programma) references Programma(ID) ON UPDATE CASCADE ON DELETE CASCADE;
-alter table Trasmette add foreign key (ID_Canale) references Canale(ID) ON UPDATE CASCADE ON DELETE RESTRICT;
-alter table Partecipano add foreign key (ID_Cast) references `Cast`(ID) ON UPDATE CASCADE ON DELETE RESTRICT;
-alter table Partecipano add foreign key (ID_Programma) references Programma(ID) ON UPDATE CASCADE;
-
+alter table Preferisce add foreign key (ID_Utente) references Utente(ID) ON UPDATE CASCADE ON DELETE CASCADE, add foreign key (ID_Canale) references Canale(ID) ON UPDATE CASCADE ON DELETE RESTRICT;
+alter table Trasmette add foreign key (ID_Programma) references Programma(ID) ON UPDATE CASCADE ON DELETE CASCADE, add foreign key (ID_Canale) references Canale(ID) ON UPDATE CASCADE ON DELETE RESTRICT;
+alter table Partecipano add foreign key (ID_Cast) references `Cast`(ID) ON UPDATE CASCADE ON DELETE RESTRICT, add foreign key (ID_Programma) references Programma(ID) ON UPDATE CASCADE;
 
 insert into Canale (LCN, nome) values 
 	(001, "Rai 1"), 
@@ -102,16 +96,16 @@ insert into Genere (nome) values
     ("Giallo"),
     ("Informativo");
     
-insert into Serie (nome, descrizione) values
-	("Johnny Depp vs Amber Heard", "Il processo più popolare d'America."),
-    ("Don Matteo 1", "A Gubbio, in provincia di Perugia, un sacerdote è chiamato a ricoprire l'incarico di parroco nella Chiesa di San Giovanni. Questo sacerdote è don Matteo Minelli.");
+insert into Serie (ISAN, nome, descrizione) values
+	(1212, "Johnny Depp vs Amber Heard", "Il processo più popolare d'America."),
+    (1313, "Don Matteo 1", "A Gubbio, in provincia di Perugia, un sacerdote è chiamato a ricoprire l'incarico di parroco nella Chiesa di San Giovanni. Questo sacerdote è don Matteo Minelli.");
     
-insert into Programma (titolo, descrizione, immagine, link, genere, numero_stagione, numero_episodio, ID_Serie) values
-	("Quando tutto ebbe inizio", "Primo episodio del processo più popolare d'America.", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "horror", 01, 01, 1),
-    ("Lo Straniero", "Primo episodio di Don Matteo", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "Fiction", 01, 01, 2),
-    ("Una Banale Operazione", "Secondo episodio di Don Matteo", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "Fiction", 01, 02, 2);
+insert into Programma (ISAN, titolo, descrizione, immagine, link, genere, numero_stagione, numero_episodio, ID_Serie) values
+	(1111, "Quando tutto ebbe inizio", "Primo episodio del processo più popolare d'America.", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "horror", 01, 01, 1),
+    (2222, "Lo Straniero", "Primo episodio di Don Matteo", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "Fiction", 01, 01, 2),
+    (3333, "Una Banale Operazione", "Secondo episodio di Don Matteo", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "Fiction", 01, 02, 2);
 
-insert into Utente (email, nome, cognome, password) values
+insert into Utente (email, nome, cognome, `password`) values
 	("marco.dantonio1@student.univaq.it", "Marco", "D'Antonio", "qwertyuioplkjhgfdsazxcvbnmhgfdsassertyui"),
     ("alessia.sebastiano@student.univaq.it", "Alessia", "Sebastiano", "aertyukjnmkjhgfcvbnhgfbnmkgfvbnjgfgb"),
 	("mattia.peccerillo@student.univaq.it", "Mattia", "Peccerillo", "nbvcdfrtyuikjnbvfrtyuiuytredfvbhjkmnbv");
