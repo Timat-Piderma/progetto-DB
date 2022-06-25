@@ -24,6 +24,7 @@ create table Serie (
 
 create table Programma (
 	ID integer auto_increment primary key,
+	ISAN integer not null,
 	titolo varchar(255) not null,
 	descrizione varchar(255) not null,
 	immagine varchar(255) default null,
@@ -32,6 +33,7 @@ create table Programma (
 	numero_stagione integer default null,
 	numero_episodio integer default null,
 	ID_Serie integer default null
+	constraint Programma_unico unique(ISAN)
 );
 
 create table Canale (
