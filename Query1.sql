@@ -42,11 +42,41 @@ delimiter ;
 -- 3 Generazione del palinsesto odierno di un canale (lista di ora di inizio, nome programma, ora di fine e genere per ogni programma del giorno, ovviamente ordinata per ora di inizio).
 drop procedure if exists generaPalinsesto;
 delimiter $
-create procedure generaPalinsesto ()
+create procedure generaPalinsesto (LCNP Integer, out risultato boolean)
 begin
-	select ora_Inizio, titolo, ora_Fine, genere from (Programma t1 join Trasmette t2 on t1.ID = t2.ID_Programma where (data_Programmazione between CURDATE() and DATE_ADD(CURDATE(), interval 7 DAY))
-	order by ora_Inizio;
+
+	if (not(LCNP in (select c.LCN from canale as c))) then
+		set risultato = false;
+
+	else select t.ora_Inizio as "Ora di inizio", p.titolo as Titolo, t.ora_Fine as "Ora fine", p.genere as Genere from trasmette t
+		join Canale c on (t.ID_Canale = c.ID)
+        join Programma p on (t.ID_Programma = p.ID)
+        where c.LCN = LCNP and t.data_Programmazione = curdate()
+        order by t.ora_Inizio;
+		set risultato = true;
+	end if;
+    
 end $
 delimiter ;
 
+-- 4. Lista dei canali/date/orari in cui sono trasmessi gli episodi di una certa serie.
 
+drop procedure if exists palinsestoProgramma;
+delimiter $
+create procedure palinsestoProgramma (ISANP integer, out risultato boolean)
+begin
+
+	if (not(ISANP in (select s.ISAN from Serie as s))) then
+		set risultato = false;
+
+	else select c.nome as Nome, c.LCN, t.data_Programmazione as `Data`, t.ora_Inizio as Orario, p.numero_Stagione as Stagione, p.numero_Episodio as Episodio from trasmette t
+		join Canale  c on (t.ID_Canale = c.ID)
+        join Programma p on (t.ID_Programma = p.ID)
+        join Serie s on (s.ID = p.ID_Serie)
+        where s.ISAN = ISANP
+        order by c.LCN;
+		set risultato = true;
+	end if;
+    
+end $
+delimiter ;
