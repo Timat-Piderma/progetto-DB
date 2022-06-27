@@ -52,7 +52,8 @@ create table Preferisce (
 	ID_Utente integer not null,
 	ID_Canale integer not null,
 	fascia_Oraria varchar(255) not null,
-	constraint chiave_Preferisce primary key (fascia_Oraria, ID_Utente, ID_Canale)
+	constraint chiave_Preferisce primary key (fascia_Oraria, ID_Utente, ID_Canale),
+    constraint check (fascia_Oraria in ("m", "p", "s", "n"))
 );
 
 create table Trasmette (
@@ -115,7 +116,15 @@ insert into `Cast` (nome, cognome, cf) values
     ("Matteo", "Minelli", "IOSONOMATTEO1"),
 	("Amber", "Heard", "SONOLACATTIVA");
     
-INSERT INTO trasmette (`ID_Programma`, `ID_Canale`, `data_Programmazione`, `ora_Inizio`, `ora_Fine`) VALUES
-(2, 1, "2022-06-26", "15:30:00", "16:00:00"),
-(3, 1, "2022-06-27", "16:30:00", "17:00:00"),
-(1, 2, "2022-06-26", "15:30:00", "16:00:00");
+INSERT INTO Trasmette (`ID_Programma`, `ID_Canale`, `data_Programmazione`, `ora_Inizio`, `ora_Fine`) VALUES
+(2, 1, "2022-06-26", "15:30", "16:00"),
+(3, 1, "2022-06-27", "16:30", "17:00"),
+(1, 2, "2022-06-26", "15:30", "16:00"),
+(1, 3, "2022-06-27", "07:30", "08:00"),
+(3, 3, "2022-06-27", "15:30", "16:50");
+
+INSERT INTO Preferisce (ID_Utente, ID_Canale , fascia_Oraria ) VALUES
+(1, 3, "m"),
+(2, 3, "p"),
+(3, 2, "s");
+

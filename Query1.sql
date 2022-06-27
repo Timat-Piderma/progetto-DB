@@ -80,3 +80,74 @@ begin
     
 end $
 delimiter ;
+
+-- 5. Lista dei programmi (o canali) maggiormente “preferiti” dagli utenti (cioè indicati come parte della loro mail giornaliera).
+
+drop procedure if exists listaProgrammiPreferiti;
+delimiter $
+create procedure listaProgrammiPreferiti (out risultato boolean)
+begin
+		
+	select distinct c.nome as Canale, p.titolo as Titolo from Preferisce as pref
+    join Canale c on (pref.ID_Canale = c.ID)
+    join Trasmette t on (c.ID = t.ID_Canale)
+    join Programma p on (t.ID_Programma = p.ID)
+    where (pref.fascia_Oraria = "m" and t.ora_Inizio between "06:00:00" and "12:00:00")
+    or (pref.fascia_Oraria = "p" and t.ora_Inizio between "12:00:00" and "18:00:00")
+    or (pref.fascia_Oraria = "s" and t.ora_Inizio between "18:00:00" and "00:00:00")
+    or (pref.fascia_Oraria = "n" and t.ora_Inizio between "00:00:00" and "06:00:00");
+    set risultato = true;
+    
+end $
+delimiter ;
+
+-- 6. Eliminazione di un programma televisivo dal database (considerate come eliminarlo e quando permetterne veramente la cancellazione!).
+
+-- 7. Ricerca dei film di un certo genere in programma nei prossimi sette giorni.
+
+-- 8. Ricerca dei programmi a cui partecipa a qualsiasi titolo (o con un titolo specificato) una certa persona.
+
+-- 9. Numero programmi distinti trasmessi da ciascuna emittente in un determinato giorno.
+
+drop procedure if exists numeroProgrammiDistinti;
+delimiter $
+create procedure numeroProgrammiDistinti (giornoP date, out risultato boolean)
+begin
+		
+	if(not(giornoP between curdate() and adddate(curdate(), interval 7 day))) then
+		set risultato = false;
+    
+    else
+		select c.nome as Canale, count(distinct p.ISAN) as "Numero programmi" from trasmette as t
+		join Canale c on (t.ID_Canale = c.ID)
+		join Programma p on (t.ID_Programma = p.ID)
+		where t.data_Programmazione = giornoP
+		group by c.LCN;
+		set risultato = true;
+    
+    end if;
+end $
+delimiter ;
+
+-- 10. Minuti totali di programmazione per un certo canale in un certo giorno (ottenuti sommando la durata, eventualmente calcolata, di tutti i programmi che ha in palinsesto per quel giorno).
+
+drop procedure if exists minutiTotali;
+delimiter $
+create procedure minutiTotali (LCNP integer, giornoP date, out risultato boolean)
+begin
+
+	if(not(giornoP between curdate() and adddate(curdate(), interval 7 day) and LCNP in (select c.LCN from Canale as c))) then
+		set risultato = false;
+        
+        -- introdurre variabile subtime (Marko Gheyming)
+	else
+		select sum((extract(hour from (subtime(t.ora_Fine, t.ora_Inizio)))* 60 + (extract(minute from (subtime(t.ora_Fine, t.ora_Inizio)))))) as "Minuti Totali" from trasmette as t
+		join Canale c on (t.ID_Canale = c.ID)
+		join Programma p on (t.ID_Programma = p.ID)
+		where c.LCN = LCNP and t.data_Programmazione = giornoP;
+        set risultato = true;
+	end if;        
+end $
+delimiter ;
+
+-- 11. Generazione della email giornaliera per un utente in base alle sue preferenze (cioè generazione del testo da inserire nell’email, come da preferenze dell’utente).
