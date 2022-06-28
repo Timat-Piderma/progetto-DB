@@ -151,3 +151,35 @@ end $
 delimiter ;
 
 -- 11. Generazione della email giornaliera per un utente in base alle sue preferenze (cioè generazione del testo da inserire nell’email, come da preferenze dell’utente).
+
+drop procedure if exists generazioneEmail;
+delimiter $
+create procedure generazioneEMail (emailP varchar(255), out risultato boolean)
+begin
+
+	if(not(emailP in (Select email from Utente))) then
+		set risultato = false;
+        
+	
+	else
+		set @testo = "Programmi per la giornata di oggi:      ";
+        set @testo = concat(@testo, (
+        select c.nome as Canale, p.titolo as Titolo, t.ora_Inizio as "Ora Inizio" from Preferisce as pref
+		join Canale c on (pref.ID_Canale = c.ID)
+		join Trasmette t on (c.ID = t.ID_Canale)
+		join Programma p on (t.ID_Programma = p.ID)
+        join Utente u on (pref.ID_Utente = u.ID)
+		where emailP = u.email and t.data_Programmazione = curdate() and(        
+        (pref.fascia_Oraria = "m" and t.ora_Inizio between "06:00:00" and "12:00:00")
+		or (pref.fascia_Oraria = "p" and t.ora_Inizio between "12:00:00" and "18:00:00")
+		or (pref.fascia_Oraria = "s" and t.ora_Inizio between "18:00:00" and "00:00:00")
+		or (pref.fascia_Oraria = "n" and t.ora_Inizio between "00:00:00" and "06:00:00"))
+        ));
+        
+        select @testo;
+        
+		
+        
+	end if;        
+end $
+delimiter ;
