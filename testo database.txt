@@ -104,7 +104,8 @@ insert into Serie (ISAN, nome, descrizione) values
 insert into Programma (ISAN, titolo, descrizione, immagine, link, genere, numero_stagione, numero_episodio, ID_Serie) values
 	(1111, "Quando tutto ebbe inizio", "Primo episodio del processo più popolare d'America.", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "horror", 01, 01, 1),
     (2222, "Lo Straniero", "Primo episodio di Don Matteo", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "Fiction", 01, 01, 2),
-    (3333, "Una Banale Operazione", "Secondo episodio di Don Matteo", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "Fiction", 01, 02, 2);
+    (3333, "Una Banale Operazione", "Secondo episodio di Don Matteo", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "Fiction", 01, 02, 2),
+    (4444, "LE PAPERE", "sksk", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "Fiction", 01, 02, 2);
 
 insert into Utente (email, nome, cognome, `password`) values
 	("marco.dantonio1@student.univaq.it", "Marco", "D'Antonio", "qwertyuioplkjhgfdsazxcvbnmhgfdsassertyui"),

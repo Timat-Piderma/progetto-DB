@@ -103,6 +103,25 @@ delimiter ;
 
 -- 6. Eliminazione di un programma televisivo dal database (considerate come eliminarlo e quando permetterne veramente la cancellazione!).
 
+drop procedure if exists elimina_programma;
+delimiter $
+create procedure elimina_programma(ISANP integer, out risultato boolean)
+begin
+
+    if (not(ISANP in (select p.ISAN from Programma as p))) then
+        set risultato = false;
+
+	else if((select count(*) from trasmette t join Programma p on (p.ID = t.ID_Programma) where p.ISAN = ISANP and (t.data_Programmazione between subdate(curdate(), interval 7 day) and adddate(curdate(), interval 7 day))) = 0) then		
+       delete from Programma as p where p.ISAN = ISANP;
+       set risultato = true;    
+	else 
+		set risultato = false;
+    end if;
+end if;
+    
+end $
+delimiter ;
+
 -- 7. Ricerca dei film di un certo genere in programma nei prossimi sette giorni.
 
 -- 8. Ricerca dei programmi a cui partecipa a qualsiasi titolo (o con un titolo specificato) una certa persona.
