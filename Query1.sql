@@ -290,7 +290,3 @@ begin
 	select @testo;
 end $
 delimiter ;
-
--- Altre procedure
-
-
