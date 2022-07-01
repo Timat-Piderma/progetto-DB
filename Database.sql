@@ -1,0 +1,152 @@
+drop database if exists progettoDB;
+create database progettoDB;
+use progettoDB;
+
+create table `Cast` (
+	ID integer auto_increment primary key,
+	nome varchar(255) not null,
+	cognome varchar(255) not null,
+	cf varchar(13) not null unique
+);
+
+create table Genere (
+	ID integer auto_increment primary key,
+	nome varchar(255) not null unique
+);
+
+create table Serie (
+	ID integer auto_increment primary key,
+    ISAN integer not null unique,
+	nome varchar(255) not null,
+	descrizione varchar(255) not null
+);
+
+create table Programma (
+	ID integer auto_increment primary key,
+	ISAN integer not null unique,
+	titolo varchar(255) not null,
+	descrizione varchar(255) not null,
+	immagine varchar(255) default null,
+	link varchar(255) default null,
+	genere varchar(255) not null,
+	numero_stagione integer default null,
+	numero_episodio integer default null,
+	ID_Serie integer default null
+);
+
+create table Canale (
+	ID integer auto_increment primary key,
+	LCN integer not null unique,
+	nome varchar(255) not null
+);
+
+create table Utente (
+	ID integer auto_increment primary key,
+	email varchar(255) not null unique,
+	`password` varchar(255) not null,
+	nome varchar(255) not null,
+	cognome varchar(255) not null
+);
+
+create table Preferisce (
+	ID_Utente integer not null,
+	ID_Canale integer not null,
+	fascia_Oraria varchar(255) not null,
+	constraint chiave_Preferisce primary key (fascia_Oraria, ID_Utente, ID_Canale),
+    constraint check (fascia_Oraria in ("m", "p", "s", "n"))
+);
+
+create table Trasmette (
+	ID_Programma integer not null,
+	ID_Canale integer not null,
+	data_Programmazione DATE not null,
+	ora_Inizio TIME not null,
+	ora_Fine TIME not null,
+	constraint chiave_Trasmette primary key (data_Programmazione,ora_Inizio, ora_Fine, ID_Programma, ID_Canale)
+);
+
+create table Partecipano (
+	ID_Cast integer not null,
+	ID_Programma integer not null,
+	ruolo varchar(255) default 'non_catalogato',
+	check (ruolo in('non_catalogato', 'attore', 'regista', 'presentatore')),
+	constraint chiave_Partecipano primary key (ruolo, ID_Cast, ID_Programma)
+);
+
+alter table Programma add foreign key (ID_Serie) references Serie(ID) ON DELETE RESTRICT;
+alter table Preferisce add foreign key (ID_Utente) references Utente(ID) ON UPDATE CASCADE ON DELETE CASCADE, add foreign key (ID_Canale) references Canale(ID) ON UPDATE CASCADE ON DELETE RESTRICT;
+alter table Trasmette add foreign key (ID_Programma) references Programma(ID) ON UPDATE CASCADE ON DELETE CASCADE, add foreign key (ID_Canale) references Canale(ID) ON UPDATE CASCADE ON DELETE RESTRICT;
+alter table Partecipano add foreign key (ID_Cast) references `Cast`(ID) ON UPDATE CASCADE ON DELETE RESTRICT, add foreign key (ID_Programma) references Programma(ID) ON UPDATE CASCADE;
+
+insert into Canale (LCN, nome) values 
+	(001, "Rai 1"), 
+    (002, "Rai 2"), 
+    (003, "Rai 3");
+
+insert into Genere (nome) values
+    ("Fantasy"),
+	("Documentario"),
+    ("Avventura"),
+    ("Animazione"),
+    ("Horror"),
+    ("Azione"),
+    ("Drammatico"),
+    ("Sci-Fi"),
+    ("Commedia"),
+    ("Fiction"),
+    ("Poliziesco"),
+    ("Giallo"),
+    ("Informativo"),
+    ("Show Televisivo"),
+    ("Film Drammatico"),
+    ("Film Commedia"),
+    ("Telefilm"),
+    ("Film Avventura"),
+    ("Film Azione"),
+    ("Film Animazione"),
+    ("Film Poliziesco"),
+    ("Film Documentario"),
+    ("Film Giallo"),
+    ("Film Sci-Fi"),
+    ("Film Fantasy"),
+    ("Film Horror");
+    
+insert into Serie (ISAN, nome, descrizione) values
+	(1212, "Johnny Depp vs Amber Heard", "Il processo più popolare d'America."),
+    (1313, "Don Matteo 1", "A Gubbio, in provincia di Perugia, un sacerdote è chiamato a ricoprire l'incarico di parroco nella Chiesa di San Giovanni. Questo sacerdote è don Matteo Minelli."),
+    (1233, "Principesse sirene", "Un gruppo di ragazze che scoprono di essere sirene");
+    
+insert into Programma (ISAN, titolo, descrizione, immagine, link, genere, numero_stagione, numero_episodio, ID_Serie) values
+	(1111, "Quando tutto ebbe inizio", "Primo episodio del processo più popolare d'America.", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "Horror", 01, 01, 1),
+    (2222, "Lo Straniero", "Primo episodio di Don Matteo", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "Fiction", 01, 01, 2),
+    (3333, "Una Banale Operazione", "Secondo episodio di Don Matteo", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "Fiction", 01, 02, 2),
+    (4444, "LE PAPERE", "assalto improvviso di papere", "https://imgur.com/kjfbejlnf", "https://sitoweb.dellapagina.delprogramma", "Film Poliziesco", null, null, null);
+
+insert into Utente (email, `password`,nome, cognome) values
+	("marco.dantonio1@student.univaq.it","qwertyuioplkjhgfdsazxcvbnmhgfdsassertyui", "Marco", "D'Antonio" ),
+    ("alessia.sebastiano@student.univaq.it", "aertyukjnmkjhgfcvbnhgfbnmkgfvbnjgfgb", "Alessia", "Sebastiano"),
+	("mattia.peccerillo@student.univaq.it", "nbvcdfrtyuikjnbvfrtyuiuytredfvbhjkmnbv", "Mattia", "Peccerillo");
+    
+insert into `Cast` (nome, cognome, cf) values
+	("Johnny", "Depp", "JOHNNYDEPP010"),
+    ("Matteo", "Minelli", "IOSONOMATTEO1"),
+	("Amber", "Heard", "SONOLACATTIVA");
+    
+INSERT INTO Trasmette (`ID_Programma`, `ID_Canale`, `data_Programmazione`, `ora_Inizio`, `ora_Fine`) VALUES
+(2, 1, "2022-07-01", "15:30", "16:00"),
+(3, 1, "2022-07-01", "16:30", "17:00"),
+(1, 2, "2022-07-01", "15:30", "16:00"),
+(1, 3, "2022-07-01", "07:30", "08:00"),
+(4, 1, "2022-05-02", "22:30", "02:00"),
+(3, 3, "2022-07-01", "15:30", "16:50");
+
+INSERT INTO Preferisce (ID_Utente, ID_Canale , fascia_Oraria ) VALUES
+(2, 3, "m"),
+(2, 3, "p"),
+(3, 2, "p");
+
+INSERT INTO Partecipano(ID_Cast, ID_Programma , ruolo) VALUES
+(1,2,"attore"),
+(1,1,"regista"),
+(2,3,"regista"),
+(3,1,"attore");
