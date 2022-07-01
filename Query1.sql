@@ -1,9 +1,9 @@
 use progettoDB;
 
 -- 1 Registrazione di un utente
-drop procedure if exists aggiungiUtente;
+drop procedure if exists aggiungi_utente;
 delimiter $
-create procedure aggiungiUtente(nomeP varchar(255) , cognomeP varchar(255), emailP varchar(255), passwordP varchar(255), out risultato boolean)
+create procedure aggiungi_utente(nomeP varchar(255) , cognomeP varchar(255), emailP varchar(255), passwordP varchar(255), out risultato boolean)
 begin
     
     if (emailP in (SELECT u.email FROM Utente as u)) then
@@ -17,9 +17,9 @@ end $
 delimiter ;
 
 -- 2 Inserimento di un programma televisivo (due casi: programma singolo o episodio di una serie).
-drop procedure if exists aggiungiProgramma;
+drop procedure if exists aggiungi_programma;
 delimiter $
-create procedure aggiungiProgramma(ISANP Integer, titoloP varchar(255), descrizioneP varchar(255), immagineP varchar(255), linkP varchar(255), genereP varchar(255), numero_stagioneP integer, numero_episodioP integer, ISAN_SerieP integer, out risultato boolean) 
+create procedure aggiungi_programma(ISANP Integer, titoloP varchar(255), descrizioneP varchar(255), immagineP varchar(255), linkP varchar(255), genereP varchar(255), numero_stagioneP integer, numero_episodioP integer, ISAN_SerieP integer, out risultato boolean) 
 -- Nella procedura qui sopra da inserire o ID_Serie o un qualcosa per permettere la ricerca dell'esatta serie nel caso 
 begin
 -- controlli di ammissibilità di ISAN e di genere
@@ -40,9 +40,9 @@ end $
 delimiter ;
 
 -- 3 Generazione del palinsesto odierno di un canale (lista di ora di inizio, nome programma, ora di fine e genere per ogni programma del giorno, ovviamente ordinata per ora di inizio).
-drop procedure if exists generaPalinsesto;
+drop procedure if exists genera_palinsesto;
 delimiter $
-create procedure generaPalinsesto (LCNP Integer, out risultato boolean)
+create procedure genera_palinsesto (LCNP Integer, out risultato boolean)
 begin
 
 	if (not(LCNP in (select c.LCN from canale as c))) then
@@ -61,9 +61,9 @@ delimiter ;
 
 -- 4. Lista dei canali/date/orari in cui sono trasmessi gli episodi di una certa serie.
 
-drop procedure if exists palinsestoProgramma;
+drop procedure if exists palinsesto_serie;
 delimiter $
-create procedure palinsestoProgramma (ISANP integer, out risultato boolean)
+create procedure palinsesto_serie (ISANP integer, out risultato boolean)
 begin
 
 	if (not(ISANP in (select s.ISAN from Serie as s))) then
@@ -83,21 +83,27 @@ delimiter ;
 
 -- 5. Lista dei programmi (o canali) maggiormente “preferiti” dagli utenti (cioè indicati come parte della loro mail giornaliera).
 
-drop procedure if exists listaProgrammiPreferiti;
+drop procedure if exists lista_programmi_preferiti;
 delimiter $
-create procedure listaProgrammiPreferiti (out risultato boolean)
+create procedure lista_programmi_preferiti (out risultato boolean)
 begin
 		
-	select distinct c.nome as Canale, p.titolo as Titolo from Preferisce as pref
-    join Canale c on (pref.ID_Canale = c.ID)
-    join Trasmette t on (c.ID = t.ID_Canale)
-    join Programma p on (t.ID_Programma = p.ID)
-    where (pref.fascia_Oraria = "m" and t.ora_Inizio between "06:00:00" and "12:00:00")
-    or (pref.fascia_Oraria = "p" and t.ora_Inizio between "12:00:00" and "18:00:00")
-    or (pref.fascia_Oraria = "s" and t.ora_Inizio between "18:00:00" and "00:00:00")
-    or (pref.fascia_Oraria = "n" and t.ora_Inizio between "00:00:00" and "06:00:00");
-    set risultato = true;
+	if((select count(*) from preferisce) = 0) then
+		set risultato = false;
     
+    else
+    
+		select distinct c.nome as Canale, p.titolo as Titolo from Preferisce as pref
+		join Canale c on (pref.ID_Canale = c.ID)
+		join Trasmette t on (c.ID = t.ID_Canale)
+		join Programma p on (t.ID_Programma = p.ID)
+		where (pref.fascia_Oraria = "m" and t.ora_Inizio between "06:00:00" and "12:00:00")
+		or (pref.fascia_Oraria = "p" and t.ora_Inizio between "12:00:00" and "18:00:00")
+		or (pref.fascia_Oraria = "s" and t.ora_Inizio between "18:00:00" and "00:00:00")
+		or (pref.fascia_Oraria = "n" and t.ora_Inizio between "00:00:00" and "06:00:00");
+		set risultato = true;
+    
+    end if;
 end $
 delimiter ;
 
@@ -124,13 +130,49 @@ delimiter ;
 
 -- 7. Ricerca dei film di un certo genere in programma nei prossimi sette giorni.
 
+drop procedure if exists ricerca_film;
+delimiter $
+create procedure ricerca_film(GenereP varchar(255), out risultato boolean)
+begin
+
+    if (not(concat("Film ",GenereP) in (select g.Nome from Genere as g))) then
+        set risultato = false;
+
+	else 
+			select p.titolo as Titolo, t.data_Programmazione as `Data`, ora_Inizio as "Ora Inizio", c.LCN as Canale from Trasmette t 
+			join Canale c on (t.ID_Canale = c.ID)
+			join Programma p on (t.ID_Programma = p.ID) 
+			where  p.genere = concat("Film ",GenereP) and (t.data_Programmazione between subdate(curdate(), interval 7 day) and adddate(curdate(), interval 7 day));
+			set risultato = true;
+    end if;
+end $
+delimiter ;
+
 -- 8. Ricerca dei programmi a cui partecipa a qualsiasi titolo (o con un titolo specificato) una certa persona.
+
+drop procedure if exists ricerca_personaggio;
+delimiter $
+create procedure ricerca_personaggio (cfP char(16), ruoloP varchar(200), out risultato boolean)
+begin
+
+    if (not(cfP in (select c.cf from Cast as c))) then
+        set risultato = false;
+
+    else select p.titolo as Titolo, par.ruolo as Ruolo from Partecipano par
+        join Cast c on (c.ID=par.ID_Cast )
+        join Programma p on (par.ID_Programma = p.ID)
+        where c.cf=cfP and (par.ruolo=ruoloP or ruoloP is null);
+        set risultato = true;
+    end if;
+
+end $
+delimiter ;
 
 -- 9. Numero programmi distinti trasmessi da ciascuna emittente in un determinato giorno.
 
-drop procedure if exists numeroProgrammiDistinti;
+drop procedure if exists numero_programmi_distinti;
 delimiter $
-create procedure numeroProgrammiDistinti (giornoP date, out risultato boolean)
+create procedure numero_programmi_distinti (giornoP date, out risultato boolean)
 begin
 		
 	if(not(giornoP between curdate() and adddate(curdate(), interval 7 day))) then
@@ -150,40 +192,60 @@ delimiter ;
 
 -- 10. Minuti totali di programmazione per un certo canale in un certo giorno (ottenuti sommando la durata, eventualmente calcolata, di tutti i programmi che ha in palinsesto per quel giorno).
 
-drop procedure if exists minutiTotali;
+drop procedure if exists minuti_totali;
 delimiter $
-create procedure minutiTotali (LCNP integer, giornoP date, out risultato boolean)
+create procedure minuti_totali (LCNP integer, giornoP date, out risultato boolean)
 begin
-
-	if(not(giornoP between curdate() and adddate(curdate(), interval 7 day) and LCNP in (select c.LCN from Canale as c))) then
-		set risultato = false;
-        
-        -- introdurre variabile subtime (Marko Gheyming)
-	else
-		select sum((extract(hour from (subtime(t.ora_Fine, t.ora_Inizio)))* 60 + (extract(minute from (subtime(t.ora_Fine, t.ora_Inizio)))))) as "Minuti Totali" from trasmette as t
+    declare finito int default false;
+    declare inizio time;
+    declare fine time;
+    declare totale integer default 0;
+    declare cur cursor for select t.ora_Inizio, t.ora_Fine from Trasmette as t
+    join Canale c on (t.ID_Canale = c.ID)
+	join Programma p on (t.ID_Programma = p.ID)
+	where c.LCN = LCNP and t.data_Programmazione = giornoP;
+    declare continue handler for not found set finito = true;
+    
+     open cur;
+     
+	if((select count(*) from Trasmette as t
 		join Canale c on (t.ID_Canale = c.ID)
 		join Programma p on (t.ID_Programma = p.ID)
-		where c.LCN = LCNP and t.data_Programmazione = giornoP;
-        set risultato = true;
-	end if;        
-end $
+		where c.LCN = LCNP and t.data_Programmazione = giornoP) = 0) then
+        select 0;
+		set risultato = false;
+
+	else
+		set risultato = true;
+		read_loop: loop
+			fetch cur into inizio, fine;
+			if finito then
+				leave read_loop;
+			end if;
+			
+            if(inizio > fine) then
+				set totale = totale + (((extract(hour from subtime(addtime(fine, "24:00:00"), inizio))) * 60) + extract(minute from subtime(addtime(fine, "24:00:00"), inizio)));            
+            else
+				set totale = totale + (((extract(hour from subtime(fine, inizio))) * 60) + extract(minute from subtime(fine, inizio)));
+			end if;
+		end loop;
+        select totale;
+	end if;
+	close cur;
+	end $
 delimiter ;
 
 -- 11. Generazione della email giornaliera per un utente in base alle sue preferenze (cioè generazione del testo da inserire nell’email, come da preferenze dell’utente).
 
-drop procedure if exists generazioneEmail;
+drop procedure if exists generazione_email;
 delimiter $
-create procedure generazioneEMail (emailP varchar(255), out risultato boolean)
+create procedure generazione_email (emailP varchar(255), out risultato boolean)
 begin
-
-	if(not(emailP in (Select email from Utente))) then
-		set risultato = false;
-        
-	
-	else
-		set @testo = "Programmi per la giornata di oggi:      ";
-        set @testo = concat(@testo, (
-        select c.nome as Canale, p.titolo as Titolo, t.ora_Inizio as "Ora Inizio" from Preferisce as pref
+	declare finito int default false;
+	declare titolo_programma varchar(255);
+    declare LCN_canale Integer;
+    declare ora_inizio_programma time;
+	declare cur cursor for select p.titolo, c.LCN, t.ora_Inizio from Preferisce as pref
 		join Canale c on (pref.ID_Canale = c.ID)
 		join Trasmette t on (c.ID = t.ID_Canale)
 		join Programma p on (t.ID_Programma = p.ID)
@@ -192,13 +254,43 @@ begin
         (pref.fascia_Oraria = "m" and t.ora_Inizio between "06:00:00" and "12:00:00")
 		or (pref.fascia_Oraria = "p" and t.ora_Inizio between "12:00:00" and "18:00:00")
 		or (pref.fascia_Oraria = "s" and t.ora_Inizio between "18:00:00" and "00:00:00")
-		or (pref.fascia_Oraria = "n" and t.ora_Inizio between "00:00:00" and "06:00:00"))
-        ));
-        
-        select @testo;
-        
-		
-        
-	end if;        
+		or (pref.fascia_Oraria = "n" and t.ora_Inizio between "00:00:00" and "06:00:00"));
+	declare continue handler for not found set finito = true;
+	
+    open cur;
+    
+    if((select count(*) from Preferisce as pref
+		join Canale c on (pref.ID_Canale = c.ID)
+		join Trasmette t on (c.ID = t.ID_Canale)
+		join Programma p on (t.ID_Programma = p.ID)
+        join Utente u on (pref.ID_Utente = u.ID)
+		where emailP = u.email and t.data_Programmazione = curdate() and(        
+        (pref.fascia_Oraria = "m" and t.ora_Inizio between "06:00:00" and "12:00:00")
+		or (pref.fascia_Oraria = "p" and t.ora_Inizio between "12:00:00" and "18:00:00")
+		or (pref.fascia_Oraria = "s" and t.ora_Inizio between "18:00:00" and "00:00:00")
+		or (pref.fascia_Oraria = "n" and t.ora_Inizio between "00:00:00" and "06:00:00"))) = 0) then
+		set @testo = "Nessun programma disponibile";
+		set risultato = false;
+
+    else
+		set risultato = true;
+
+		set @testo = "Programmi per la giornata di oggi";
+       
+		read_loop: loop
+			fetch cur into titolo_programma, LCN_canale, ora_inizio_programma;
+			if finito then
+				leave read_loop;
+			end if;
+			set @testo = concat_ws(" : ", @testo, titolo_programma, concat("Canale ", LCN_Canale), concat("Ora ", ora_inizio_programma));
+			end loop;
+	end if;
+	close cur;
+       
+	select @testo;
 end $
 delimiter ;
+
+-- Altre procedure
+
+
